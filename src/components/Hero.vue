@@ -46,8 +46,12 @@
             </div>
           </div>
 
-          <router-link to="/login" class="inline-flex items-center space-x-2 bg-sky-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-sky-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-            <span>Iniciar Evaluación Médica</span>
+          <!-- Botón dinámico -->
+          <router-link 
+            :to="authStore.isAuthenticated ? '/asistente' : '/login'" 
+            class="inline-flex items-center space-x-2 bg-sky-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-sky-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          >
+            <span>{{ authStore.isAuthenticated ? 'Ir al Asistente Médico' : 'Iniciar Evaluación Médica' }}</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
@@ -73,3 +77,9 @@
     </div>
   </section>
 </template>
+
+<script setup>
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
+</script>

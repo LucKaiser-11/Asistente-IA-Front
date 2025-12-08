@@ -179,7 +179,7 @@ const handleLogin = async () => {
       rol: 'cliente'
     })
     
-    router.push('/evaluacion')
+    router.push('/')
   } catch (error) {
     alert('Error al iniciar sesión')
   }
