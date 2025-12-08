@@ -137,7 +137,11 @@
 
 <script setup>
 import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
+const router = useRouter()
+const authStore = useAuthStore()
 // Login
 const email = ref('')
 const password = ref('')
@@ -165,8 +169,20 @@ watch(showRegisterModal, (newValue) => {
 })
 
 const handleLogin = async () => {
-  // Aquí irá la llamada al backend
-  console.log('Login:', email.value, password.value)
+  try {
+    // Simulación - después conectarás con tu backend
+    authStore.setToken('fake-jwt-token')
+    authStore.setUser({
+      id: 1,
+      nombres: 'Lucas',
+      email: email.value,
+      rol: 'cliente'
+    })
+    
+    router.push('/evaluacion')
+  } catch (error) {
+    alert('Error al iniciar sesión')
+  }
 }
 
 const handleRegister = async () => {
