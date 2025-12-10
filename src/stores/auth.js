@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { authService } from '../services/authService'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(null)
@@ -18,18 +19,19 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
+    authService.logout()
     user.value = null
     token.value = null
-    localStorage.removeItem('token')
   }
 
   async function loadUser() {
-    if (token.value) {
-      user.value = {
-        id: 1,
-        nombres: 'Usuario',
-        email: 'user@test.com',
-        rol: 'cliente'
+    if (token.value && !user.value) {
+      try {
+        const response = await authService.getCurrentUser()
+        user.value = response.usuario
+      } catch (error) {
+        console.error('Error al cargar usuario:', error)
+        logout()
       }
     }
   }

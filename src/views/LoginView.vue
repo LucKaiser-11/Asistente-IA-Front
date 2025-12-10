@@ -7,6 +7,11 @@
         <p class="text-gray-500 mt-2">Inicia sesión para continuar</p>
       </div>
 
+      <!-- Mensaje de error -->
+      <div v-if="errorMessage" class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        {{ errorMessage }}
+      </div>
+
       <!-- Formulario -->
       <form @submit.prevent="handleLogin">
         <!-- Email -->
@@ -36,9 +41,10 @@
         <!-- Botón -->
         <button
           type="submit"
-          class="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 rounded-lg transition duration-200"
+          :disabled="loading"
+          class="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Iniciar sesión
+          {{ loading ? 'Iniciando sesión...' : 'Iniciar sesión' }}
         </button>
       </form>
 
@@ -59,7 +65,7 @@
     >
       <div
         @click.stop
-        class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all"
+        class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all max-h-[90vh] overflow-y-auto"
       >
         <!-- Header del modal -->
         <div class="flex justify-between items-center mb-6">
@@ -72,23 +78,64 @@
           </button>
         </div>
 
+        <!-- Mensaje de éxito -->
+        <div v-if="registerSuccess" class="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+          {{ registerSuccess }}
+        </div>
+
+        <!-- Mensaje de error -->
+        <div v-if="registerError" class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          {{ registerError }}
+        </div>
+
         <!-- Formulario de registro -->
         <form @submit.prevent="handleRegister">
-          <!-- Nombre completo -->
+          <!-- Nombre(s) -->
           <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-medium mb-2">Nombre completo</label>
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+              Nombre(s) <span class="text-red-500">*</span>
+            </label>
             <input
               v-model="registerNombre"
               type="text"
-              placeholder="Juan Pérez"
+              placeholder="Juan Carlos"
               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
               required
             />
           </div>
 
+          <!-- Apellido Paterno -->
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+              Apellido Paterno <span class="text-red-500">*</span>
+            </label>
+            <input
+              v-model="registerApellidoPaterno"
+              type="text"
+              placeholder="Pérez"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+              required
+            />
+          </div>
+
+          <!-- Apellido Materno (opcional) -->
+          <div class="mb-4">
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+              Apellido Materno <span class="text-gray-400 text-xs">(opcional)</span>
+            </label>
+            <input
+              v-model="registerApellidoMaterno"
+              type="text"
+              placeholder="García"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition"
+            />
+          </div>
+
           <!-- Email -->
           <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-medium mb-2">Correo electrónico</label>
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+              Correo electrónico <span class="text-red-500">*</span>
+            </label>
             <input
               v-model="registerEmail"
               type="email"
@@ -100,7 +147,10 @@
 
           <!-- Contraseña -->
           <div class="mb-4">
-            <label class="block text-gray-700 text-sm font-medium mb-2">Contraseña</label>
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+              Contraseña <span class="text-red-500">*</span>
+              <span class="text-gray-400 text-xs">(mínimo 6 caracteres)</span>
+            </label>
             <input
               v-model="registerPassword"
               type="password"
@@ -112,7 +162,9 @@
 
           <!-- Confirmar contraseña -->
           <div class="mb-6">
-            <label class="block text-gray-700 text-sm font-medium mb-2">Confirmar contraseña</label>
+            <label class="block text-gray-700 text-sm font-medium mb-2">
+              Confirmar contraseña <span class="text-red-500">*</span>
+            </label>
             <input
               v-model="registerConfirmPassword"
               type="password"
@@ -125,9 +177,10 @@
           <!-- Botón -->
           <button
             type="submit"
-            class="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 rounded-lg transition duration-200"
+            :disabled="registerLoading"
+            class="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 rounded-lg transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Registrarse
+            {{ registerLoading ? 'Registrando...' : 'Registrarse' }}
           </button>
         </form>
       </div>
@@ -135,30 +188,44 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { authService } from '../services/authService'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
 // Login
 const email = ref('')
 const password = ref('')
+const loading = ref(false)
+const errorMessage = ref('')
 
 // Registro
 const showRegisterModal = ref(false)
 const registerNombre = ref('')
+const registerApellidoPaterno = ref('')
+const registerApellidoMaterno = ref('')
 const registerEmail = ref('')
 const registerPassword = ref('')
 const registerConfirmPassword = ref('')
+const registerLoading = ref(false)
+const registerError = ref('')
+const registerSuccess = ref('')
 
 // Función para limpiar el formulario de registro
 const clearRegisterForm = () => {
   registerNombre.value = ''
+  registerApellidoPaterno.value = ''
+  registerApellidoMaterno.value = ''
   registerEmail.value = ''
   registerPassword.value = ''
   registerConfirmPassword.value = ''
+  registerError.value = ''
+  registerSuccess.value = ''
 }
 
 // Limpiar formulario cuando se cierra el modal
@@ -169,37 +236,81 @@ watch(showRegisterModal, (newValue) => {
 })
 
 const handleLogin = async () => {
+  loading.value = true
+  errorMessage.value = ''
+  
   try {
-    // Simulación - después conectarás con tu backend
-    authStore.setToken('fake-jwt-token')
-    authStore.setUser({
-      id: 1,
-      nombres: 'Lucas',
-      email: email.value,
-      rol: 'cliente'
-    })
-    
-    router.push('/')
+    const response = await authService.login(email.value, password.value)
+    authStore.setToken(response.token)
+    authStore.setUser(response.usuario)
+    router.push('/asistente')
   } catch (error) {
-    alert('Error al iniciar sesión')
+    console.error('Error en login:', error)
+    if (error.response?.data?.message) {
+      errorMessage.value = error.response.data.message
+    } else if (error.response?.status === 401) {
+      errorMessage.value = 'Email o contraseña incorrectos'
+    } else {
+      errorMessage.value = 'Error al iniciar sesión. Intenta de nuevo.'
+    }
+  } finally {
+    loading.value = false
   }
 }
 
 const handleRegister = async () => {
-  // Validar que las contraseñas coincidan
-  if (registerPassword.value !== registerConfirmPassword.value) {
-    alert('Las contraseñas no coinciden')
-    return
+  registerError.value = ''
+  registerSuccess.value = ''
+  registerLoading.value = true
+  
+  try {
+    if (registerPassword.value !== registerConfirmPassword.value) {
+      registerError.value = 'Las contraseñas no coinciden'
+      registerLoading.value = false
+      return
+    }
+    
+    if (registerPassword.value.length < 6) {
+      registerError.value = 'La contraseña debe tener al menos 6 caracteres'
+      registerLoading.value = false
+      return
+    }
+    
+    if (!registerNombre.value.trim()) {
+      registerError.value = 'El nombre es obligatorio'
+      registerLoading.value = false
+      return
+    }
+    
+    const response = await authService.register({
+      nombres: registerNombre.value.trim(),
+      apellido_paterno: registerApellidoPaterno.value.trim() || 'Sin apellido',
+      apellido_materno: registerApellidoMaterno.value.trim() || null,
+      email: registerEmail.value,
+      password: registerPassword.value
+    })
+    
+    registerSuccess.value = '¡Cuenta creada exitosamente! Redirigiendo...'
+    authStore.setToken(response.token)
+    authStore.setUser(response.usuario)
+    
+    setTimeout(() => {
+      showRegisterModal.value = false
+      router.push('/asistente')
+    }, 1000)
+    
+  } catch (error) {
+    console.error('Error en registro:', error)
+    if (error.response?.data?.message) {
+      registerError.value = error.response.data.message
+    } else if (error.response?.status === 409) {
+      registerError.value = 'Este email ya está registrado'
+    } else {
+      registerError.value = 'Error al registrar. Intenta de nuevo.'
+    }
+  } finally {
+    registerLoading.value = false
   }
-
-  // Aquí irá la llamada al backend
-  console.log('Registro:', {
-    nombre: registerNombre.value,
-    email: registerEmail.value,
-    password: registerPassword.value
-  })
-
-  // Cerrar modal (el watch se encargará de limpiar)
-  showRegisterModal.value = false
 }
 </script>
+

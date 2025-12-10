@@ -28,7 +28,11 @@
               <AnalysisResults :analyzed-text="analyzedText">
                 <!-- Síntomas detectados -->
                 <div class="space-y-4">
-                  <div v-for="symptom in detectedSymptoms" :key="symptom.name" class="flex justify-between items-center">
+                  <div 
+                    v-for="symptom in detectedSymptoms" 
+                    :key="symptom.name" 
+                    class="flex justify-between items-center"
+                  >
                     <span class="text-gray-700">{{ symptom.name }}</span>
                     <span class="text-blue-600 font-semibold">{{ symptom.confidence }}%</span>
                   </div>
@@ -54,9 +58,7 @@
       <template v-if="showDiagnosis">
         <DiagnosisHeader />
         
-        <TopDiagnosis :diagnosis="topDiagnosis" />
-        
-        <ProbabilityChart :diagnoses="diagnosisList" />
+        <!-- ❌ QUITADO: ProbabilityChart -->
         
         <DiagnosisList :diagnoses="diagnosisList" />
         
@@ -75,7 +77,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
+import { diagnosticoService } from '../services/diagnosticoService'
 import AnalysisHeader from '../components/AnalysisHeader.vue'
 import SymptomsInput from '../components/SymptomsInput.vue'
 import ExampleSymptoms from '../components/ExampleSymptoms.vue'
@@ -84,8 +87,6 @@ import TipsCard from '../components/TipsCard.vue'
 import AnalysisResults from '../components/AnalysisResults.vue'
 import SuccessMessage from '../components/SuccessMessage.vue'
 import DiagnosisHeader from '../components/DiagnosisHeader.vue'
-import TopDiagnosis from '../components/TopDiagnosis.vue'
-import ProbabilityChart from '../components/ProbabilityChart.vue'
 import DiagnosisList from '../components/DiagnosisList.vue'
 
 const showResults = ref(false)
@@ -93,11 +94,13 @@ const showDiagnosis = ref(false)
 const analyzedText = ref('')
 const detectedSymptoms = ref([])
 
-// Datos de diagnóstico simulados
+// Solo para depurar
+const pubmedDataFromSymptoms = ref(null)
+
+// Datos de diagnóstico iniciales (solo nombre y criteria)
 const diagnosisList = ref([
   {
     name: 'Migraña',
-    probability: 72,
     criteria: [
       'Dolor de cabeza unilateral',
       'Sensibilidad a la luz (fotofobia)',
@@ -107,7 +110,6 @@ const diagnosisList = ref([
   },
   {
     name: 'Gripe (Influenza)',
-    probability: 65,
     criteria: [
       'Fiebre elevada',
       'Fatiga generalizada',
@@ -117,7 +119,6 @@ const diagnosisList = ref([
   },
   {
     name: 'Sinusitis Aguda',
-    probability: 48,
     criteria: [
       'Dolor de cabeza frontal',
       'Congestión nasal asociada',
@@ -126,7 +127,6 @@ const diagnosisList = ref([
   },
   {
     name: 'Cefalea Tensional',
-    probability: 35,
     criteria: [
       'Dolor de cabeza bilateral',
       'Sensación de presión',
@@ -135,12 +135,9 @@ const diagnosisList = ref([
   }
 ])
 
-const topDiagnosis = computed(() => diagnosisList.value[0])
-
-const handleAnalyze = (text) => {
+const handleAnalyze = async (text) => {
   analyzedText.value = text
   
-  // Simulación de análisis (después conectarás con el backend)
   detectedSymptoms.value = [
     { name: 'Dolor de cabeza', confidence: 95 },
     { name: 'Fiebre', confidence: 88 },
@@ -148,18 +145,36 @@ const handleAnalyze = (text) => {
   ]
   
   showResults.value = true
+
+  try {
+    const data = await diagnosticoService.searchBySymptoms(text)
+    pubmedDataFromSymptoms.value = data
+    console.log('Respuesta backend IA:', data)
+
+    if (data && Array.isArray(data.results) && data.results.length > 0) {
+      diagnosisList.value = data.results.map((item) => ({
+        name: item.title || `Diagnóstico sugerido`,
+        criteria: [
+          item.source ? `Fuente: ${item.source}` : 'Fuente: IA AsistMedic',
+          `Síntomas analizados: ${analyzedText.value.slice(0, 60)}...`
+        ]
+      }))
+
+      // Mostrar directamente la sección de diagnóstico diferencial
+      showDiagnosis.value = true
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  } catch (error) {
+    console.error('Error al llamar al backend IA:', error)
+  }
 }
 
 const handleSelectExample = (example) => {
-  // Aquí podrías auto-rellenar el textarea con el ejemplo
   console.log('Ejemplo seleccionado:', example)
 }
 
 const handleGenerateDiagnosis = () => {
-  // Simular delay de procesamiento
   showDiagnosis.value = true
-  
-  // Scroll suave hacia arriba
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -168,8 +183,7 @@ const resetAnalysis = () => {
   showResults.value = false
   analyzedText.value = ''
   detectedSymptoms.value = []
-  
-  // Scroll suave hacia arriba
+  pubmedDataFromSymptoms.value = null
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 </script>
