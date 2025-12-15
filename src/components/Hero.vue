@@ -9,13 +9,12 @@
           </span>
           
           <h1 class="text-4xl lg:text-5xl font-bold text-sky-900 leading-tight">
-            Sistema Inteligente de Diagnóstico Médico
+            Asistente Inteligente de Diagnóstico Médico
           </h1>
           
           <p class="text-lg text-gray-600 leading-relaxed">
-            Analiza tus síntomas usando procesamiento de lenguaje natural avanzado. 
-            Recibe diagnósticos diferenciales precisos y orientación médica personalizada 
-            mediante nuestro chatbot inteligente.
+            Consulta tus síntomas usando procesamiento de lenguaje natural avanzado. 
+            Recibe diagnósticos sobre tus consultas.
           </p>
 
           <!-- Features -->
@@ -42,7 +41,7 @@
               <svg class="w-6 h-6 text-teal-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
               </svg>
-              <span class="text-gray-700">Chatbot médico interactivo</span>
+              <span class="text-gray-700">Asistente médico interactivo</span>
             </div>
           </div>
 
@@ -51,7 +50,7 @@
             :to="authStore.isAuthenticated ? '/asistente' : '/login'" 
             class="inline-flex items-center space-x-2 bg-sky-500 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-sky-600 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
-            <span>{{ authStore.isAuthenticated ? 'Ir al Asistente Médico' : 'Iniciar Evaluación Médica' }}</span>
+            <span>{{ authStore.isAuthenticated ? 'Consultar con el asistente' : 'Iniciar Evaluación Médica' }}</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
             </svg>
@@ -68,7 +67,7 @@
         <!-- Columna derecha - Imagen -->
         <div class="relative">
           <img 
-            src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=800" 
+            src="https://user-gen-media-assets.s3.amazonaws.com/gemini_images/3b901576-85c4-4ebe-a2cc-9e72bf143d74.png" 
             alt="Médico utilizando tecnología" 
             class="rounded-2xl shadow-2xl w-full h-auto"
           />

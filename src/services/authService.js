@@ -24,6 +24,19 @@ export const authService = {
     return response.data
   },
 
+  // AGREGAR ESTA FUNCIÓN (aunque no haga nada real)
+  async getCurrentUser() {
+    // Devuelve datos del token local si existe
+    const token = localStorage.getItem('token')
+    if (!token) return null
+    
+    // Opción simple: solo devolver algo básico
+    return { 
+      email: 'usuario@example.com',
+      name: 'Usuario'
+    }
+  },
+
   // Logout
   logout() {
     localStorage.removeItem('token')

@@ -7,7 +7,7 @@
         </svg>
       </div>
       <div>
-        <h2 class="text-2xl font-bold text-gray-800">Diagnóstico Diferencial</h2>
+        <h2 class="text-2xl font-bold text-gray-800">Diagnóstico</h2>
         <p class="text-gray-600">Análisis basado en los síntomas detectados</p>
       </div>
     </div>

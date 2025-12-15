@@ -7,7 +7,7 @@
         </svg>
       </div>
     </div>
-    <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">Análisis de Síntomas con IA</h1>
+    <h1 class="text-2xl font-bold text-center text-gray-800 mb-2">Análisis de Síntomas</h1>
     <p class="text-center text-gray-600">
       Describe tus síntomas en lenguaje natural. Nuestro sistema utilizará procesamiento de lenguaje
       natural avanzado (NLP) para identificar y analizar tus síntomas.

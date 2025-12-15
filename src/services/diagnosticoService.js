@@ -21,24 +21,33 @@ export const diagnosticoService = {
 
     const data = await response.json()
 
-    // 1 principal + alternativas => ranking
+    // 1 principal + alternativas => ranking CON SÍNTOMAS
     const resultados = [
       {
         title: data.diagnostico,
         confidence: data.confianza,
         probability: data.confianza,
-        source: 'IA AsistMedic (backend)',
-        pubdate: new Date().toISOString().slice(0, 10)
+        source: 'IA MediCore (backend)',
+        pubdate: new Date().toISOString().slice(0, 10),
+        criteria: data.sintomas_enfermedad || ['Sin información disponible'] // ← AGREGADO
       },
       ...(data.alternativas || []).map(alt => ({
         title: alt.diagnostico,
         confidence: alt.confianza,
         probability: alt.confianza,
-        source: 'IA AsistMedic (backend)',
-        pubdate: new Date().toISOString().slice(0, 10)
+        source: 'IA MediCore (backend)',
+        pubdate: new Date().toISOString().slice(0, 10),
+        criteria: alt.sintomas || ['Sin información disponible'] // ← AGREGADO
       }))
     ]
 
-    return { results: resultados }
+    // NUEVO: Devolver también los datos de los 3 algoritmos
+    return { 
+      results: resultados,
+      diagnostico: data.diagnostico,
+      confianza: data.confianza,
+      votos: data.votos,
+      algoritmos: data.algoritmos || []  // Array con info de los 3 algoritmos
+    }
   }
 }

@@ -7,7 +7,7 @@
     <div class="p-6 text-white relative">
       <div class="flex justify-between items-start mb-2">
         <div>
-          <p class="text-sm opacity-90 mb-1">#{{ rank }} - {{ diagnosis.probability }}% de probabilidad</p>
+          <p class="text-sm opacity-90 mb-1">#{{ rank }}</p>
           <h3 class="text-2xl font-bold">{{ diagnosis.name }}</h3>
         </div>
         <span class="text-6xl font-bold opacity-20">#{{ rank }}</span>

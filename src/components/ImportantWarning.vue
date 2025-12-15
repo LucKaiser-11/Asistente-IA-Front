@@ -7,7 +7,7 @@
       <div>
         <h4 class="font-bold text-yellow-900 mb-2">Importante</h4>
         <p class="text-yellow-800 text-sm leading-relaxed">
-          Este sistema es una herramienta de apoyo diagnóstico. Si experimentas síntomas
+          Este asistente es una herramienta de apoyo diagnóstico. Si experimentas síntomas
           graves como dolor torácico intenso, dificultad para respirar o pérdida de
           consciencia, busca atención médica inmediata.
         </p>
