@@ -50,94 +50,85 @@
       <template v-if="showDiagnosis">
         <DiagnosisHeader />
         
-        <!-- Sección de Algoritmos (Colores médicos: azul + teal) -->
-        <div v-if="algoritmos.length > 0" class="mb-8">
-          <div class="bg-gradient-to-r from-blue-600 via-blue-700 to-teal-600 rounded-2xl shadow-2xl p-6 border-2 border-blue-200">
-            <div class="flex items-center justify-center gap-3 mb-6">
-              <span class="text-4xl">🔬</span>
-              <h3 class="text-2xl font-bold text-white text-center">
-                Análisis por Algoritmo de Inteligencia Artificial
+        <!-- 🩺 MENSAJE DEL ASISTENTE CON EXPLICACIÓN -->
+        <div v-if="mensajeAsistente" class="mb-8">
+          <div class="bg-gradient-to-r from-purple-500 via-indigo-600 to-blue-600 rounded-2xl shadow-2xl p-6 border-2 border-purple-200">
+            <div class="flex items-center gap-3 mb-4">
+              <span class="text-4xl">🤖</span>
+              <h3 class="text-2xl font-bold text-white">
+                Análisis del Asistente Médico IA
               </h3>
             </div>
             
-            <!-- Grid de 2 columnas -->
-            <div class="grid md:grid-cols-2 gap-6">
+            <div class="bg-white rounded-xl p-6 shadow-xl border-2 border-indigo-100">
+              <div class="prose prose-lg max-w-none">
+                <div v-html="formatMessage(mensajeAsistente)" class="text-gray-800 leading-relaxed whitespace-pre-line"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 📊 TOP 3 DIAGNÓSTICOS POSIBLES -->
+        <div v-if="top3Diagnosticos && top3Diagnosticos.length > 0" class="mb-8">
+          <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl shadow-2xl p-6 border-2 border-blue-200">
+            <div class="flex items-center gap-3 mb-6">
+              <span class="text-4xl">📊</span>
+              <h3 class="text-2xl font-bold text-white">
+                Top 3 Diagnósticos Más Probables
+              </h3>
+            </div>
+            
+            <div class="space-y-4">
               <div 
-                v-for="(algo, index) in algoritmos" 
+                v-for="(diag, index) in top3Diagnosticos" 
                 :key="index"
-                class="bg-white rounded-xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border-2 border-blue-100"
+                class="bg-white rounded-xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border-2"
+                :class="getBorderClass(index)"
               >
-                <div class="flex items-center gap-3 mb-4 pb-3 border-b-2 border-blue-100">
-                  <span class="text-4xl">{{ getAlgoritmoIcon(algo.nombre) }}</span>
-                  <h4 class="font-bold text-blue-900 text-sm">{{ algo.nombre }}</h4>
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-3">
+                    <span class="text-3xl">{{ getMedalIcon(index) }}</span>
+                    <div>
+                      <p class="text-sm font-semibold text-gray-500">Posición #{{ diag.posicion }}</p>
+                      <h4 class="text-2xl font-bold text-gray-900">{{ diag.enfermedad }}</h4>
+                    </div>
+                  </div>
+                  <span 
+                    class="text-3xl font-bold px-4 py-2 rounded-xl"
+                    :class="getConfidenceClass(diag.confianza)"
+                  >
+                    {{ diag.confianza }}%
+                  </span>
                 </div>
                 
-                <div class="space-y-3">
-                  <p class="text-xl font-bold text-gray-900">{{ algo.prediccion }}</p>
-                  
-                  <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
-                    <div 
-                      class="h-full rounded-full transition-all duration-500 shadow-lg"
-                      :class="getColorClass(algo.confianza)"
-                      :style="{ width: algo.confianza + '%' }"
-                    ></div>
-                  </div>
-                  
-                  <div class="flex justify-between items-center">
-                    <p class="text-sm font-semibold text-gray-600">
-                      Confianza:
-                    </p>
-                    <span class="text-lg font-bold" :class="getTextColorClass(algo.confianza)">
-                      {{ algo.confianza }}%
-                    </span>
-                  </div>
+                <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
+                  <div 
+                    class="h-full rounded-full transition-all duration-700"
+                    :class="getColorClass(diag.confianza)"
+                    :style="{ width: diag.confianza + '%' }"
+                  ></div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Diagnóstico Consensuado (Verde hospital + cruz médica) -->
-        <div v-if="diagnosticoFinal" class="mb-8">
-          <div class="bg-gradient-to-r from-emerald-500 via-green-600 to-teal-600 rounded-2xl shadow-2xl p-6 border-2 border-green-200">
-            <div class="flex justify-between items-center mb-4">
-              <div class="flex items-center gap-3">
-                <span class="text-4xl">⚕️</span>
-                <h3 class="text-2xl font-bold text-white">
-                  Diagnóstico Sugerido
-                </h3>
-              </div>
-              <span class="bg-white/90 text-emerald-700 px-5 py-2 rounded-full font-bold text-sm shadow-lg border-2 border-white">
-                {{ votosAlgoritmos }}/2 algoritmos
-              </span>
-            </div>
-            
-            <div class="bg-white rounded-xl p-6 shadow-xl border-2 border-green-100">
-              <div class="flex items-start gap-4">
-                <span class="text-5xl mt-1">🏥</span>
-                <div class="flex-1">
-                  <h2 class="text-3xl font-bold text-gray-900 mb-2">
-                    {{ diagnosticoFinal }}
-                  </h2>
-                  <div class="flex items-center gap-3 mt-3">
-                    <div class="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
-                      <div 
-                        class="h-full rounded-full transition-all duration-500"
-                        :class="getColorClass(confianzaFinal)"
-                        :style="{ width: confianzaFinal + '%' }"
-                      ></div>
-                    </div>
-                    <span class="text-xl font-bold" :class="getTextColorClass(confianzaFinal)">
-                      {{ confianzaFinal }}%
-                    </span>
-                  </div>
-                </div>
+        <!-- ⚠️ ADVERTENCIA MÉDICA -->
+        <div v-if="recomendacion" class="mb-8">
+          <div class="bg-gradient-to-r from-amber-100 to-yellow-100 rounded-2xl p-6 border-2 border-amber-300 shadow-xl">
+            <div class="flex items-start gap-4">
+              <span class="text-4xl">⚠️</span>
+              <div>
+                <h4 class="text-xl font-bold text-amber-900 mb-2">Importante: Consulta Médica Necesaria</h4>
+                <p class="text-amber-800 leading-relaxed">
+                  {{ recomendacion }}
+                </p>
               </div>
             </div>
           </div>
         </div>
         
-        <!-- Botón para volver (Azul médico) -->
+        <!-- Botón para volver -->
         <div class="mt-8 text-center">
           <button 
             @click="resetAnalysis"
@@ -167,11 +158,12 @@ const showDiagnosis = ref(false)
 const analyzedText = ref('')
 const detectedSymptoms = ref([])
 
-// Variables para los 2 algoritmos
-const algoritmos = ref([])
+// Variables para la respuesta del backend
+const top3Diagnosticos = ref([])
+const mensajeAsistente = ref('')
+const recomendacion = ref('')
 const diagnosticoFinal = ref('')
 const confianzaFinal = ref(0)
-const votosAlgoritmos = ref(0)
 
 const handleAnalyze = async (text) => {
   analyzedText.value = text
@@ -186,22 +178,49 @@ const handleAnalyze = async (text) => {
 
   try {
     const data = await diagnosticoService.searchBySymptoms(text)
-    console.log('Respuesta backend IA:', data)
+    console.log('✅ RESPUESTA COMPLETA DEL BACKEND:', JSON.stringify(data, null, 2))
 
-    if (data.algoritmos && data.algoritmos.length > 0) {
-      algoritmos.value = data.algoritmos
-      diagnosticoFinal.value = data.diagnostico
-      confianzaFinal.value = data.confianza
-      votosAlgoritmos.value = data.votos
+    // ✅ VALIDAR Y CARGAR DATOS
+    if (data) {
+      // Top 3
+      if (data.top3 && Array.isArray(data.top3) && data.top3.length > 0) {
+        top3Diagnosticos.value = data.top3
+        console.log('📊 Top 3:', top3Diagnosticos.value)
+      } else {
+        console.warn('⚠️ No hay top3 en la respuesta')
+      }
+
+      // Mensaje del asistente
+      if (data.mensaje) {
+        mensajeAsistente.value = data.mensaje
+        console.log('🤖 Mensaje:', mensajeAsistente.value)
+      } else {
+        console.warn('⚠️ No hay mensaje en la respuesta')
+      }
+
+      // Diagnóstico principal
+      if (data.diagnostico) {
+        diagnosticoFinal.value = data.diagnostico
+        confianzaFinal.value = data.confianza || 0
+        console.log('🏆 Diagnóstico:', diagnosticoFinal.value, confianzaFinal.value + '%')
+      } else {
+        console.warn('⚠️ No hay diagnóstico en la respuesta')
+      }
+
+      // Recomendación
+      recomendacion.value = data.recomendacion || '⚠️ Consulta con un médico profesional para confirmación.'
+
+      // Mostrar sección de diagnóstico
+      showDiagnosis.value = true
+      console.log('✅ showDiagnosis activado')
       
-      
-      console.log('✅ Algoritmos cargados:', algoritmos.value)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      console.error('❌ La respuesta del backend está vacía')
     }
-
-    showDiagnosis.value = true
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   } catch (error) {
-    console.error('Error al llamar al backend IA:', error)
+    console.error('❌ Error al llamar al backend:', error)
+    console.error('Detalles:', error.response?.data || error.message)
   }
 }
 
@@ -219,17 +238,46 @@ const resetAnalysis = () => {
   showResults.value = false
   analyzedText.value = ''
   detectedSymptoms.value = []
-  algoritmos.value = []
+  top3Diagnosticos.value = []
+  mensajeAsistente.value = ''
+  recomendacion.value = ''
   diagnosticoFinal.value = ''
   confianzaFinal.value = 0
-  votosAlgoritmos.value = 0
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-const getAlgoritmoIcon = (nombre) => {
-  if (nombre.includes('Naive')) return '🧬'
-  if (nombre.includes('Logistic')) return '💊'
-  return '🩺'
+// Formatear mensaje con Markdown básico
+// Formatear mensaje con Markdown básico
+const formatMessage = (text) => {
+  if (!text) return ''
+  
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-700 font-bold">$1</strong>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>')
+}
+
+
+// Iconos para el podio
+const getMedalIcon = (index) => {
+  const icons = ['🥇', '🥈', '🥉']
+  return icons[index] || '🏅'
+}
+
+// Bordes según posición
+const getBorderClass = (index) => {
+  if (index === 0) return 'border-yellow-400'
+  if (index === 1) return 'border-gray-400'
+  if (index === 2) return 'border-amber-600'
+  return 'border-gray-300'
+}
+
+// Clase de confianza para el texto grande
+const getConfidenceClass = (confianza) => {
+  if (confianza >= 80) return 'text-green-600 bg-green-50'
+  if (confianza >= 60) return 'text-blue-600 bg-blue-50'
+  if (confianza >= 40) return 'text-yellow-600 bg-yellow-50'
+  return 'text-red-600 bg-red-50'
 }
 
 // Colores médicos para las barras
@@ -248,3 +296,13 @@ const getTextColorClass = (confianza) => {
   return 'text-red-700'
 }
 </script>
+
+<style scoped>
+.prose {
+  max-width: none;
+}
+
+.prose p {
+  margin-bottom: 1rem;
+}
+</style>
