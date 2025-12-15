@@ -194,6 +194,7 @@ const handleAnalyze = async (text) => {
       confianzaFinal.value = data.confianza
       votosAlgoritmos.value = data.votos
       
+      
       console.log('✅ Algoritmos cargados:', algoritmos.value)
     }
 
