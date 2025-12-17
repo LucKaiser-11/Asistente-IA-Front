@@ -144,7 +144,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { diagnosticoService } from '../services/diagnosticoService'
+import diagnosticoService from '../services/diagnosticoService'
 import AnalysisHeader from '../components/AnalysisHeader.vue'
 import SymptomsInput from '../components/SymptomsInput.vue'
 import ExampleSymptoms from '../components/ExampleSymptoms.vue'
@@ -210,6 +210,28 @@ const handleAnalyze = async (text) => {
       // Recomendación
       recomendacion.value = data.recomendacion || '⚠️ Consulta con un médico profesional para confirmación.'
 
+      // ========================================
+      // 💾 GUARDAR AUTOMÁTICAMENTE EN BD (NUEVO)
+      // ========================================
+      if (data.diagnostico && !data.necesita_mas_info) {
+        try {
+          console.log('💾 Guardando diagnóstico en base de datos...')
+          
+          await diagnosticoService.guardarDiagnostico({
+            diagnostico: data.diagnostico,
+            confianza: data.confianza,
+            sintomas: text,
+            top3: data.top3
+          })
+          
+          console.log('✅ Diagnóstico guardado exitosamente en historial')
+        } catch (error) {
+          console.error('❌ Error al guardar diagnóstico:', error)
+          // No bloquear el flujo si falla el guardado
+        }
+      }
+      // ========================================
+
       // Mostrar sección de diagnóstico
       showDiagnosis.value = true
       console.log('✅ showDiagnosis activado')
@@ -223,6 +245,7 @@ const handleAnalyze = async (text) => {
     console.error('Detalles:', error.response?.data || error.message)
   }
 }
+
 
 const handleSelectExample = (example) => {
   console.log('Ejemplo seleccionado:', example)
